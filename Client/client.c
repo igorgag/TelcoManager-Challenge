@@ -18,14 +18,19 @@ void func(int sockfd)
         n = 0; 
         while ((buff[n++] = getchar()) != '\n') 
             ; 
-        write(sockfd, buff, sizeof(buff)); 
-        bzero(buff, sizeof(buff)); 
-        read(sockfd, buff, sizeof(buff)); 
-        printf("S: %s", buff); 
-        if ((strncmp(buff, "exit", 4)) == 0) { 
+        if(strcmp(buff, "help\n") == 0){
+        	printf("Lista de comandos disponíveis:\n-list <opção de ordenação> <asc/desc>: as opções de ordenação são 'name' e 'size'\n-send : enviar um arquivo no path 'file'\n-get : recuperar o arquivo com o nome 'file' \n-exit\n");
+	
+	} else if ((strncmp(buff, "exit", 4)) == 0) { 
             printf("Client Exit...\n"); 
             break; 
-        } 
+        } else{
+        	write(sockfd, buff, sizeof(buff));
+        	bzero(buff, sizeof(buff)); 
+        	read(sockfd, buff, sizeof(buff)); 
+        	printf("S: %s", buff);  
+        }
+         
     } 
 } 
   
