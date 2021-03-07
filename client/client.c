@@ -18,7 +18,7 @@ void func(int sockfd)
         n = 0; 
         while ((buff[n++] = getchar()) != '\n') 
             ; 
-        if(strcmp(buff, "help\n") == 0){
+        if(strncmp(buff, "help", 4) == 0){
         	printf("Lista de comandos disponíveis:\n-list <opção de ordenação> <asc/desc>: as opções de ordenação são 'name' e 'size'\n-send : enviar um arquivo no path 'file'\n-get : recuperar o arquivo com o nome 'file' \n-exit\n");
 	
 	} else if ((strncmp(buff, "exit", 4)) == 0) { 

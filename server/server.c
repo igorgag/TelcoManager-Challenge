@@ -8,7 +8,11 @@
 #define PORT 50080
 #define MAX 100
 
+#include <sys/types.h> 
+
 #define SA struct sockaddr
+
+#include "user/user.h"
 
 void func(int sockfd)
 { 
@@ -22,18 +26,33 @@ void func(int sockfd)
 
         printf("C: %s\n", buff); 
         
-	
+	/*
 	bzero(buff, MAX); 
 	n = 0;
 	while ((buff[n++] = getchar()) != '\n') 
-            ;   
+            ;
+        */
+        if(strncmp(buff, "hello", 5) == 0){
+        	strcpy(buff, "hello\n");
+        }else if(strncmp("list", buff, 4) == 0){
+        
+        }else if(strncmp("get", buff, 3) == 0){
+        
+        } else if(strncmp("send", buff, 4) == 0){
+        	 
+        } else{ //se não é um comando é o Id do cliente        
+        	if(!readUser(buff)){        		
+			strcpy(buff,"Cliente não encontrado.\n");
+		}
+		
+        }        
         
         write(sockfd, buff, sizeof(buff)); 
-  
+	/*
         if (strncmp("exit", buff, 4) == 0) { 
             printf("Server Exit...\n"); 
             break; 
-        } 
+        }*/
     } 
 } 
 

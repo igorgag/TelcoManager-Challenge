@@ -1,2 +1,2 @@
 #!/bin/bash
-./Client/client
+./client/client
