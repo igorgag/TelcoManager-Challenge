@@ -43,7 +43,7 @@ void func(int sockfd)
         } else{ //se não é um comando é o Id do cliente
         	if(!readUser(strtok(buff, "\n"))){        		
 			strcpy(buff,"Cliente não encontrado.\n");
-		} else {
+		} else {			
 			strcpy(buff,"Cliente encontrado.\n");
 		}
 		

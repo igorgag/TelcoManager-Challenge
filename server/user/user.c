@@ -1,5 +1,8 @@
 #include "user.h"
 
+User *user;
+ListFile *list_files;
+
 MYSQL_RES *result;
 MYSQL_ROW row;
 
@@ -23,7 +26,7 @@ int readUser(char id[])
 		finish_with_error(con);
 		return 0;
 	}
-			
+	//Busca dados do usuario(cliente)		
 	sprintf(query, "SELECT * FROM USER user WHERE user.USER_ID = '%s'", id);		
 	
 	if (mysql_query(con, query))
@@ -41,37 +44,85 @@ int readUser(char id[])
 	}
  
 	int num_fields = mysql_num_fields(result);	
-	/*
-	if(mysql_fetch_row(result) == NULL){
-		finish_with_error(con);
-		return 0;
-	}*/
 
 	if((row = mysql_fetch_row(result)))
-	{				
-		for(int i = 0; i < num_fields; i++)
-		{
-		  printf("%s ", row[i] ? row[i] : "NULL");
-		}
+	{	
+		user = malloc(sizeof(User));			
+		strcpy(user->id,row[0]);
+		strcpy(user->name,row[1]);
 
-		printf("\n");
+		//printf("%s %s\n", user->id, user->name);
+
+
 	} else {
 		return 0;
 	}
 	
-	mysql_free_result(result);
+	mysql_free_result(result);	
+	
+	//busca arquivos do cliente
+	sprintf(query, "SELECT file.NAME_FILE FROM FILE file WHERE file.USER_ID = '%s'", id);		
+	
+	if (mysql_query(con, query))
+	{
+		finish_with_error(con);
+		return 0;	   
+	}
+	
+	result = mysql_store_result(con);
+
+	if (result == NULL)
+	{	
+		finish_with_error(con);		
+		return 0;
+	}
+ 	
+	num_fields = mysql_num_fields(result);	
+	
+	list_files = malloc(sizeof(ListFile));	
+	list_files->first = NULL;
+	list_files->last = NULL;
+	
+	while((row = mysql_fetch_row(result)))
+	{	
+
+		File *file = malloc(sizeof(File));
+		strcpy(file->name,row[0]);
+		file->next = NULL;	
+
+		if(list_files->first == NULL){
+			list_files->first = file;
+			list_files->last = file;
+		} else {
+			list_files->last->next = file;			
+			list_files->last = file;
+		}	
+	} 	
+	
 	mysql_close(con);
+	
+	if(!printFiles()){
+		printf("Lista de Arquivos Vazia.\n");
+	}
+	
   	return 1; 	
 }
-int updateUser(char id)
+int addFile(char name[], char adress[])
 {
 }
-int addFile(ListFile list_files, File file)
+int printFiles()
 {
+	File *iterator;
+	if(list_files->first == NULL){
+		return 0;
+	}else{			
+		iterator = list_files->first;
+		while(iterator != NULL){
+			printf("Nome: %s - Tamanho: %d\n", iterator->name, 10);
+			iterator = iterator->next;
+		}		
+	}
+	return 1;
 }
-void printFiles(ListFile list_files)
-{
-}
-void connectDB(){
-}
+
 

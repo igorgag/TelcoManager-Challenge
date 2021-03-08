@@ -1,21 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mysql.h>
+#include <string.h>
 
-typedef struct{
-	int id;
+typedef struct file{
 	char name[100];
-	char adress[100];
+	struct file *next;
 } File;
 
-typedef struct node{
-	File file;
-	struct node *next;
-} Node;
-
 typedef struct listFile{
-	Node *first;
-	Node *last;
+	File *first;
+	File *last;
 } ListFile;
 
 typedef struct{
@@ -25,6 +20,6 @@ typedef struct{
 } User;
 
 int readUser(char id[]);
-int updateUser(char id);
-int addFile(ListFile list_files, File file);
-void printFiles(ListFile list_files);
+int addFile(char name[], char adress[]);
+int printFiles();
+
