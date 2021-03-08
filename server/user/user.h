@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <mysql.h>
+#include <mysql.h>
 
 typedef struct{
 	int id;
@@ -24,7 +24,7 @@ typedef struct{
 	ListFile list_files;
 } User;
 
-int readUser(char id);
+int readUser(char id[]);
 int updateUser(char id);
 int addFile(ListFile list_files, File file);
 void printFiles(ListFile list_files);
