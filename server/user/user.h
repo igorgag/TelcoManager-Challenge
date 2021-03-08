@@ -5,6 +5,7 @@
 
 typedef struct file{
 	char name[100];
+	char size[100];
 	struct file *next;
 } File;
 

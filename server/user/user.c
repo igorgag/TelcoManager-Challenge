@@ -61,7 +61,7 @@ int readUser(char id[])
 	mysql_free_result(result);	
 	
 	//busca arquivos do cliente
-	sprintf(query, "SELECT file.NAME_FILE FROM FILE file WHERE file.USER_ID = '%s'", id);		
+	sprintf(query, "SELECT file.NAME_FILE,file.SIZE FROM FILE file WHERE file.USER_ID = '%s'", id);		
 	
 	if (mysql_query(con, query))
 	{
@@ -88,6 +88,7 @@ int readUser(char id[])
 
 		File *file = malloc(sizeof(File));
 		strcpy(file->name,row[0]);
+		strcpy(file->size,row[1]);
 		file->next = NULL;	
 
 		if(list_files->first == NULL){
@@ -100,25 +101,22 @@ int readUser(char id[])
 	} 	
 	
 	mysql_close(con);
-	
-	if(!printFiles()){
-		printf("Lista de Arquivos Vazia.\n");
-	}
-	
   	return 1; 	
 }
 int addFile(char name[], char adress[])
 {
 }
-int printFiles()
+int printFiles(char msg[])
 {
 	File *iterator;
+	char row[1000];
 	if(list_files->first == NULL){
 		return 0;
 	}else{			
 		iterator = list_files->first;
 		while(iterator != NULL){
-			printf("Nome: %s - Tamanho: %d\n", iterator->name, 10);
+			sprintf(row, "Nome: %s - Tamanho: %s\n", iterator->name, iterator->size);
+			strcat(msg, row);
 			iterator = iterator->next;
 		}		
 	}

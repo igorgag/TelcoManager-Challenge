@@ -35,7 +35,9 @@ void func(int sockfd)
         if(strncmp(buff, "hello", 5) == 0){
         	strcpy(buff, "hello\n");
         }else if(strncmp("list", buff, 4) == 0){
-        
+        	if(!printFiles(buff)){
+        		strcpy(buff,"Cliente não encontrado.\n");
+        	}                	
         }else if(strncmp("get", buff, 3) == 0){
         
         } else if(strncmp("send", buff, 4) == 0){
