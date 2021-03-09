@@ -1,4 +1,5 @@
 #include "user.h"
+#include "../DBconnect.h"
 
 User *user;
 ListFile *list_files;
@@ -18,7 +19,7 @@ int readUser(char id[])
 	      return 0;
   	}
   	
-  	if (mysql_real_connect(con, "localhost", "root", "root",
+  	if (mysql_real_connect(con, "localhost", USER, PASSWORD,
 	"TELCOMANAGER", 0, NULL, 0) == NULL){
 		finish_with_error(con);
 		return 0;
@@ -117,7 +118,7 @@ int addFile(char name[], char size[])
 	      return 0;
   	}
   	
-  	if (mysql_real_connect(con, "localhost", "root", "root",
+  	if (mysql_real_connect(con, "localhost", USER, PASSWORD,
 	"TELCOMANAGER", 0, NULL, 0) == NULL){
 		finish_with_error(con);
 		return 0;
