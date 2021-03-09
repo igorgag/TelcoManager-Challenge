@@ -109,6 +109,7 @@ int addFile(char name[], char size[])
 	File *file = malloc(sizeof(File)); 
 	strcpy(file->name,name);
 	strcpy(file->size,size);
+	file->next = NULL;
 	
 	MYSQL *con = mysql_init(NULL);
 	char query[200];
@@ -124,20 +125,23 @@ int addFile(char name[], char size[])
 		return 0;
 	}	
 	//insere arquivo no banco		
-	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES(%s,%s,%s)  ", name, size, user->id);		
+	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES('%s','%s','%s')  ", name, size, user->id);		
 	
 	if (mysql_query(con, query))
 	{
 		finish_with_error(con);
 		return 0;	   
 	}
+		
+	list_files->last->next = file;			
+	list_files->last = file;
 	
 	mysql_close(con);
 	return 1;
 	
 }
 int printFiles(char msg[])
-{
+{	
 	File *iterator;
 	char row[1000];
 	if(list_files->first == NULL){

@@ -43,6 +43,12 @@ void getfile(char buff[], int sockfd, char id[]){
 		exit(1);
 	}
 	
+	fseek(fp, 0, SEEK_END);
+	snprintf(data, sizeof(data), "%ld", ftell(fp));
+	send(sockfd, data, sizeof(data),  0);
+	bzero(data, SIZE);
+	fseek(fp, 0, SEEK_SET);
+	
 	while(fgets(data, sizeof(data), fp) != NULL) {
 	
 	    if(send(sockfd, data, sizeof(data),  0) == -1) {
@@ -81,19 +87,29 @@ void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){
 	exit(1);
   } 
   
+  long int length;
+  recv(sockfd, buffer, sizeof(buffer), 0);
+  length = atol(buffer);
+  
+  printf("len: %ld", length);  
+  
   while (1) {  
-    n = recv(sockfd, buffer, sizeof(buffer), 0);
-    printf("buffer: %s", buffer);
-    if (n <= 0){
+    memset(buffer, 0, sizeof(buffer));
+    n = recv(sockfd, buffer, sizeof(buffer), 0);  
+    printf("n: %d", n);
+    if ((length = length - n) <= 0){
+      fprintf(fp, "%s", buffer);
+      fflush(fp); 	
       break;
       return;
     }    
-    fprintf(fp, "%s", buffer);    
-    bzero(buffer, SIZE);
+    fprintf(fp, "%s", buffer);
+    fflush(fp);    
+    //bzero(buffer, SIZE);
   }
   
   fseek(fp, 0, SEEK_END);
-  sprintf(size, "%lld", ftell(fp));
+  snprintf(size, sizeof(size), "%ld", ftell(fp));
   
   fclose(fp);                    
 }
@@ -131,12 +147,14 @@ void func(int sockfd)
  				send(sockfd, buff, sizeof(buff),0);
  				recv(sockfd, buff, sizeof(buff),0);
 				if(strncmp("get", buff, 3) == 0){
-					getfile(buff, sockfd, getUserID());               
+					getfile(buff, sockfd, getUserID());
+					strcpy(buff,"OOK - Arquivo recebido.\n");               
 				} else if(strncmp("send", buff, 4) == 0){
 					char name_file[100];
 					char size[100];
 					sendfile(buff, sockfd, getUserID(), name_file, size);                
 					addFile(name_file, size);
+					strcpy(buff,"OOK - Arquivo enviado.\n");
 				} else if(strncmp("list", buff, 4) == 0){
 					if(!printFiles(buff)){
 						strcpy(buff,"NOK - Cliente não encontrado.\n");

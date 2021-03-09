@@ -37,15 +37,22 @@ void getfile(char buff[], int sockfd){
 	exit(1);
   } 
   
+  long int length;
+  recv(sockfd, buffer, sizeof(buffer), 0);
+  length = atol(buffer);
+  
   while (1) {  
-    n = recv(sockfd, buffer, sizeof(buffer), 0);
-    printf("buffer: %s", buffer);
-    if (n <= 0){
+    memset(buffer, 0, sizeof(buffer));
+    n = recv(sockfd, buffer, sizeof(buffer), 0);  
+    if ((length = length - n) <= 0){
+      fprintf(fp, "%s", buffer);
+      fflush(fp);
       break;
       return;
     }    
-    fprintf(fp, "%s", buffer);    
-    bzero(buffer, SIZE);
+    fprintf(fp, "%s", buffer);
+    fflush(fp);    
+    //bzero(buffer, SIZE);
   }
   fclose(fp);
 }
@@ -76,13 +83,18 @@ void sendfile(char buff[], int sockfd){
 		exit(1);
 	}
 	
+	fseek(fp, 0, SEEK_END);
+	snprintf(data, sizeof(data), "%ld", ftell(fp));
+	send(sockfd, data, sizeof(data),  0);
+	//bzero(data, SIZE);
+	fseek(fp, 0, SEEK_SET);
+	
 	while(fgets(data, sizeof(data), fp) != NULL) {	
 	    if(send(sockfd, data, sizeof(data),  0) == -1) {
 	      perror("[-]Error in sending file.");
 	      exit(1);
 	    }
-            bzero(data, SIZE);	    
-            
+            bzero(data, SIZE);
 	  }
         fclose(fp); 
 }
