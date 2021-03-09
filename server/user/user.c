@@ -103,8 +103,37 @@ int readUser(char id[])
 	mysql_close(con);
   	return 1; 	
 }
-int addFile(char name[], char adress[])
+void getUserID(char id[]){
+	id = user->id;
+}
+int addFile(char name[], char size[])
 {
+	File *file = malloc(sizeof(File)); 
+	strcpy(file->name,name);
+	strcpy(file->size,size)
+	
+	MYSQL *con = mysql_init(NULL);
+	char query[200];
+	
+	if (con == NULL){
+	      fprintf(stderr, "%s\n", mysql_error(con));
+	      return 0;
+  	}
+  	
+  	if (mysql_real_connect(con, "localhost", "root", "root",
+	"TELCOMANAGER", 0, NULL, 0) == NULL){
+		finish_with_error(con);
+		return 0;
+	}
+	//Busca dados do usuario(cliente)		
+	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES(%s,%s,%s)  ", name, size, user->id);		
+	
+	if (mysql_query(con, query))
+	{
+		finish_with_error(con);
+		return 0;	   
+	}
+	
 }
 int printFiles(char msg[])
 {

@@ -21,6 +21,7 @@ typedef struct{
 } User;
 
 int readUser(char id[]);
-int addFile(char name[], char adress[]);
+void getUserID(char id[]);
+int addFile(char name[]);
 int printFiles();
 

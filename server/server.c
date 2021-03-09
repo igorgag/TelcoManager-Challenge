@@ -7,6 +7,8 @@
 #include <sys/types.h> 
 #define PORT 50080
 #define MAX 100
+#define IP "127.0.0.1"
+#define SIZE 1024
 
 #include <sys/types.h> 
 
@@ -14,15 +16,52 @@
 
 #include "user/user.h"
 
+void getfile(char buff[], int sockfd){
+	
+	File *fp;
+	char data[SIZE] = {0};
+	
+	char *pch;
+	char name_file[50];
+	char msg[100];
+
+	strcpy(msg, buff);
+	strtok(msg, "\n");
+	pch = strstr(msg, "get");
+	if (pch != NULL)
+	  strncpy (pch,"***", 3);
+	pch  = strtok(msg, "*** \n"); 
+	strcpy(name_file, pch);
+	
+	char filename[100];
+	
+	sprintf(filename,"/home/igorgag/Projetos/%s", name_file);	
+	
+	fp = fopen(filename, "r");
+	if (fp == NULL) {
+		perror("[-]Error in reading file.");
+		exit(1);
+	}
+	
+	while(fgets(data, SIZE, fp) != NULL) {	    
+	    if (send(sockfd, data, SIZE,  0) == -1) {
+	      perror("[-]Error in sending file.");
+	      exit(1);
+	    }
+            //bzero(data, SIZE);	    
+	  }
+        fclose(fp);              
+}
+
 void func(int sockfd)
 { 
     char buff[MAX]; 
-    int n; 
+    int n;         
 
     for (;;) { 
         bzero(buff, MAX); 
   
-        read(sockfd, buff, sizeof(buff)); 
+        recv(sockfd, buff, sizeof(buff),0); 
 
         printf("C: %s\n", buff); 
         
@@ -39,7 +78,7 @@ void func(int sockfd)
         		strcpy(buff,"Cliente não encontrado.\n");
         	}                	
         }else if(strncmp("get", buff, 3) == 0){
-        
+        	getfile(buff, sockfd);               
         } else if(strncmp("send", buff, 4) == 0){
         	 
         } else{ //se não é um comando é o Id do cliente
@@ -51,7 +90,7 @@ void func(int sockfd)
 		
         }        
         
-        write(sockfd, buff, sizeof(buff)); 
+        send(sockfd, buff, sizeof(buff),0); 
 	/*
         if (strncmp("exit", buff, 4) == 0) { 
             printf("Server Exit...\n"); 
@@ -62,7 +101,8 @@ void func(int sockfd)
 
 int main() 
 { 
-    int sockfd, connfd, len; 
+    int sockfd, sockarq, connfd, len;
+    
     struct sockaddr_in servaddr, cli; 
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
