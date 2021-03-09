@@ -16,9 +16,9 @@
 
 #include "user/user.h"
 
-void getfile(char buff[], int sockfd){
+void getfile(char buff[], int sockfd, char id[]){
 	
-	File *fp;
+	FILE *fp;
 	char data[SIZE] = {0};
 	
 	char *pch;
@@ -35,7 +35,7 @@ void getfile(char buff[], int sockfd){
 	
 	char filename[100];
 	
-	sprintf(filename,"/home/igorgag/Projetos/%s", name_file);	
+	sprintf(filename,"./server/files/%s/%s", id, name_file);
 	
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
@@ -43,16 +43,60 @@ void getfile(char buff[], int sockfd){
 		exit(1);
 	}
 	
-	while(fgets(data, SIZE, fp) != NULL) {	    
-	    if (send(sockfd, data, SIZE,  0) == -1) {
+	while(fgets(data, sizeof(data), fp) != NULL) {
+	
+	    if(send(sockfd, data, sizeof(data),  0) == -1) {
 	      perror("[-]Error in sending file.");
 	      exit(1);
 	    }
-            //bzero(data, SIZE);	    
+            bzero(data, SIZE);	    
 	  }
         fclose(fp);              
 }
 
+void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){	
+	
+  int n;
+  FILE *fp;
+  
+  char *pch;
+  char msg[100];
+  
+  strcpy(msg, buff);
+  strtok(msg, "\n");
+  pch = strstr(msg, "send");
+  if (pch != NULL) strncpy (pch,"****", 4);
+  pch  = strtok(msg, "**** \n"); 
+  strcpy(name_file, pch);
+
+  char filename[100];
+  
+  sprintf(filename,"./server/files/%s/%s", id, name_file);
+  
+  char buffer[SIZE];  
+
+  fp = fopen(filename, "w");
+  if (fp == NULL) {
+	perror("[-]Error in creating file.");
+	exit(1);
+  } 
+  
+  while (1) {  
+    n = recv(sockfd, buffer, sizeof(buffer), 0);
+    printf("buffer: %s", buffer);
+    if (n <= 0){
+      break;
+      return;
+    }    
+    fprintf(fp, "%s", buffer);    
+    bzero(buffer, SIZE);
+  }
+  
+  fseek(fp, 0, SEEK_END);
+  sprintf(size, "%lld", ftell(fp));
+  
+  fclose(fp);                    
+}
 void func(int sockfd)
 { 
     char buff[MAX]; 
@@ -75,17 +119,20 @@ void func(int sockfd)
         	strcpy(buff, "hello\n");
         }else if(strncmp("list", buff, 4) == 0){
         	if(!printFiles(buff)){
-        		strcpy(buff,"Cliente não encontrado.\n");
+        		strcpy(buff,"NOK - Cliente não encontrado.\n");
         	}                	
         }else if(strncmp("get", buff, 3) == 0){
-        	getfile(buff, sockfd);               
+        	getfile(buff, sockfd, getUserID());               
         } else if(strncmp("send", buff, 4) == 0){
-        	 
+        	char name_file[100];
+        	char size[100];
+        	sendfile(buff, sockfd, getUserID(), name_file, size);                
+        	addFile(name_file, size);
         } else{ //se não é um comando é o Id do cliente
         	if(!readUser(strtok(buff, "\n"))){        		
-			strcpy(buff,"Cliente não encontrado.\n");
+			strcpy(buff,"NOK - Cliente não encontrado.\n");
 		} else {			
-			strcpy(buff,"Cliente encontrado.\n");
+			strcpy(buff,"OOK - Cliente encontrado.\n");
 		}
 		
         }        
@@ -115,8 +162,8 @@ int main()
     bzero(&servaddr, sizeof(servaddr)); 
   
     servaddr.sin_family = AF_INET; 
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
-    servaddr.sin_port = htons(PORT); 
+    servaddr.sin_addr.s_addr = inet_addr(IP); 
+    servaddr.sin_port = PORT; 
   
     if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) { 
         printf("socket bind failed...\n"); 
@@ -125,7 +172,7 @@ int main()
     else
         printf("Socket successfully binded..\n"); 
   
-    if ((listen(sockfd, 5)) != 0) { 
+    if ((listen(sockfd, 10)) != 0) { 
         printf("Listen failed...\n"); 
         exit(0); 
     } 

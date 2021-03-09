@@ -20,10 +20,10 @@ mysql -u"root" -p"root" TELCOMANAGER -e " INSERT INTO USER(USER_ID, NAME_USER)
 	INSERT INTO USER(USER_ID, NAME_USER)
 	VALUES ('Cliente3', 'Ana Paula');"
 mysql -u"root" -p"root" TELCOMANAGER -e " INSERT INTO FILE(NAME_FILE, SIZE, USER_ID)
-	VALUES ('Arq1', '6','Cliente1');
+	VALUES ('Arq1.txt', '6','Cliente1');
 	INSERT INTO FILE(NAME_FILE,SIZE, USER_ID)
-	VALUES ('Arq2', '6','Cliente2');
+	VALUES ('Arq2.txt', '6','Cliente2');
 	INSERT INTO FILE(NAME_FILE,SIZE, USER_ID)
-	VALUES ('Arq3', '6','Cliente3');
+	VALUES ('Arq3.txt', '6','Cliente3');
 	INSERT INTO FILE(NAME_FILE,SIZE, USER_ID)
-	VALUES ('Arq4', '6', 'Cliente3');"
+	VALUES ('Arq4.txt', '6', 'Cliente3');"

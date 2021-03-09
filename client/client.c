@@ -27,7 +27,7 @@ void getfile(char buff[], int sockfd){
 
   char filename[100];
 
-  sprintf(filename,"/home/igorgag/Projetos/teste/%s", name_file);
+  sprintf(filename,"%s", name_file);
   
   char buffer[SIZE];  
 
@@ -37,16 +37,54 @@ void getfile(char buff[], int sockfd){
 	exit(1);
   } 
   
-  while (1) {
-  
-    n = recv(sockfd, buffer, SIZE, 0);
+  while (1) {  
+    n = recv(sockfd, buffer, sizeof(buffer), 0);
+    printf("buffer: %s", buffer);
     if (n <= 0){
       break;
+      return;
     }    
     fprintf(fp, "%s", buffer);    
     bzero(buffer, SIZE);
   }
   fclose(fp);
+}
+void sendfile(char buff[], int sockfd){
+
+	FILE *fp;
+	char data[SIZE] = {0};
+	
+	char *pch;
+	char name_file[50];
+	char msg[100];
+
+	strcpy(msg, buff);
+	strtok(msg, "\n");
+	pch = strstr(msg, "send");
+	if (pch != NULL)
+	  strncpy (pch,"****", 4);
+	pch  = strtok(msg, "**** \n"); 
+	strcpy(name_file, pch);
+	
+	char filename[100];
+	
+	sprintf(filename,"%s", name_file);
+	
+	fp = fopen(filename, "r");
+	if (fp == NULL) {
+		perror("[-]Error in reading file.");
+		exit(1);
+	}
+	
+	while(fgets(data, sizeof(data), fp) != NULL) {	
+	    if(send(sockfd, data, sizeof(data),  0) == -1) {
+	      perror("[-]Error in sending file.");
+	      exit(1);
+	    }
+            bzero(data, SIZE);	    
+            
+	  }
+        fclose(fp); 
 }
 
 void func(int sockfd) 
@@ -69,7 +107,8 @@ void func(int sockfd)
         	send(sockfd, buff, sizeof(buff),0);        	
         	if((strncmp(buff, "get", 3)) == 0){
         		getfile(buff, sockfd);
-        	} else {
+        	} else if((strncmp(buff, "send", 4)) == 0){
+        		sendfile(buff, sockfd);
         	}
         	
         	bzero(buff, sizeof(buff));         	
@@ -97,7 +136,7 @@ int main()
    
     servaddr.sin_family = AF_INET; 
     servaddr.sin_addr.s_addr = inet_addr(SERVER_IP); 
-    servaddr.sin_port = htons(PORT); 
+    servaddr.sin_port = PORT; 
   
     if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) { 
         printf("connection with the server failed...\n"); 

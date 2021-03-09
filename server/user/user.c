@@ -103,14 +103,14 @@ int readUser(char id[])
 	mysql_close(con);
   	return 1; 	
 }
-void getUserID(char id[]){
-	id = user->id;
+char * getUserID(){
+	return user->id;
 }
 int addFile(char name[], char size[])
 {
 	File *file = malloc(sizeof(File)); 
 	strcpy(file->name,name);
-	strcpy(file->size,size)
+	strcpy(file->size,size);
 	
 	MYSQL *con = mysql_init(NULL);
 	char query[200];
@@ -125,7 +125,7 @@ int addFile(char name[], char size[])
 		finish_with_error(con);
 		return 0;
 	}
-	//Busca dados do usuario(cliente)		
+	//insere arquivo no banco		
 	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES(%s,%s,%s)  ", name, size, user->id);		
 	
 	if (mysql_query(con, query))
@@ -133,6 +133,7 @@ int addFile(char name[], char size[])
 		finish_with_error(con);
 		return 0;	   
 	}
+	return 1;
 	
 }
 int printFiles(char msg[])
