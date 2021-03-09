@@ -100,11 +100,11 @@ void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){
 void func(int sockfd)
 { 
     char buff[MAX]; 
-    int n;         
+    int n;  
+    bool cliente = false;       
 
     for (;;) { 
-        bzero(buff, MAX); 
-  
+         
         recv(sockfd, buff, sizeof(buff),0); 
 
         printf("C: %s\n", buff); 
@@ -115,34 +115,43 @@ void func(int sockfd)
 	while ((buff[n++] = getchar()) != '\n') 
             ;
         */
+        if (strncmp("exit", buff, 4) == 0) { 
+            printf("Good Bye Client...\n"); 
+            break; 
+        }
+        
         if(strncmp(buff, "hello", 5) == 0){
-        	strcpy(buff, "hello\n");
-        }else if(strncmp("list", buff, 4) == 0){
-        	if(!printFiles(buff)){
-        		strcpy(buff,"NOK - Cliente não encontrado.\n");
-        	}                	
-        }else if(strncmp("get", buff, 3) == 0){
-        	getfile(buff, sockfd, getUserID());               
-        } else if(strncmp("send", buff, 4) == 0){
-        	char name_file[100];
-        	char size[100];
-        	sendfile(buff, sockfd, getUserID(), name_file, size);                
-        	addFile(name_file, size);
-        } else{ //se não é um comando é o Id do cliente
+        	strcpy(buff, "hello\n");                        	
+        }else{ //é o Id do cliente
         	if(!readUser(strtok(buff, "\n"))){        		
 			strcpy(buff,"NOK - Cliente não encontrado.\n");
 		} else {			
 			strcpy(buff,"OOK - Cliente encontrado.\n");
+			while(1){
+ 				send(sockfd, buff, sizeof(buff),0);
+ 				recv(sockfd, buff, sizeof(buff),0);
+				if(strncmp("get", buff, 3) == 0){
+					getfile(buff, sockfd, getUserID());               
+				} else if(strncmp("send", buff, 4) == 0){
+					char name_file[100];
+					char size[100];
+					sendfile(buff, sockfd, getUserID(), name_file, size);                
+					addFile(name_file, size);
+				} else if(strncmp("list", buff, 4) == 0){
+					if(!printFiles(buff)){
+						strcpy(buff,"NOK - Cliente não encontrado.\n");
+					}
+				}else if(strncmp("exit", buff, 4) == 0){
+					break;				
+				} else {
+					strcpy(buff,"NOK - Comando Invalido.\n");
+				}								 
+			}
 		}
 		
         }        
-        
-        send(sockfd, buff, sizeof(buff),0); 
-	/*
-        if (strncmp("exit", buff, 4) == 0) { 
-            printf("Server Exit...\n"); 
-            break; 
-        }*/
+                	        
+        send(sockfd, buff, sizeof(buff),0);         
     } 
 } 
 
@@ -179,7 +188,7 @@ int main()
     else
         printf("Server listening..\n"); 
     len = sizeof(cli); 
-  
+    while(1){
     connfd = accept(sockfd, (SA*)&cli, &len); 
     if (connfd < 0) { 
         printf("server acccept failed...\n"); 
@@ -189,6 +198,7 @@ int main()
         printf("server acccept the client...\n"); 
   
     func(connfd); 
+    }
   
     close(sockfd); 
 } 

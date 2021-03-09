@@ -101,6 +101,7 @@ void func(int sockfd)
         	printf("Lista de comandos disponíveis:\n-list <opção de ordenação> <asc/desc>: as opções de ordenação são 'name' e 'size'\n-send : enviar um arquivo no path 'file'\n-get : recuperar o arquivo com o nome 'file' \n-exit\n");
 	
 	} else if ((strncmp(buff, "exit", 4)) == 0) { 
+	    send(sockfd, buff, sizeof(buff),0); 
             printf("Client Exit...\n"); 
             break; 
         } else{

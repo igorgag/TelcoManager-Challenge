@@ -6,15 +6,12 @@ ListFile *list_files;
 MYSQL_RES *result;
 MYSQL_ROW row;
 
-void finish_with_error(MYSQL *con)
-{
-  fprintf(stderr, "%s\n", mysql_error(con));
-  mysql_close(con);
-}
+void finish_with_error(MYSQL *con);
+
 int readUser(char id[])
 {
 	MYSQL *con = mysql_init(NULL);
-	char query[200];
+	char query[200];		
 	
 	if (con == NULL){
 	      fprintf(stderr, "%s\n", mysql_error(con));
@@ -25,7 +22,7 @@ int readUser(char id[])
 	"TELCOMANAGER", 0, NULL, 0) == NULL){
 		finish_with_error(con);
 		return 0;
-	}
+	}	
 	//Busca dados do usuario(cliente)		
 	sprintf(query, "SELECT * FROM USER user WHERE user.USER_ID = '%s'", id);		
 	
@@ -124,7 +121,7 @@ int addFile(char name[], char size[])
 	"TELCOMANAGER", 0, NULL, 0) == NULL){
 		finish_with_error(con);
 		return 0;
-	}
+	}	
 	//insere arquivo no banco		
 	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES(%s,%s,%s)  ", name, size, user->id);		
 	
@@ -133,6 +130,8 @@ int addFile(char name[], char size[])
 		finish_with_error(con);
 		return 0;	   
 	}
+	
+	mysql_close(con);
 	return 1;
 	
 }
@@ -152,5 +151,12 @@ int printFiles(char msg[])
 	}
 	return 1;
 }
+
+void finish_with_error(MYSQL *con)
+{
+  fprintf(stderr, "%s\n", mysql_error(con));
+  mysql_close(con);
+}
+
 
 
