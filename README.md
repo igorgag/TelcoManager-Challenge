@@ -5,7 +5,7 @@
 
 ## Inicialização
 - No termial execute o script seed-bd.sh (Para criação e inicialização do Banco de Dados)
-- Substitua o USER e PASSWORD do banco mysql no arquivo ./server/DBconnect.h
+- Substitua o USER e PASSWORD do banco mysql no arquivo ./server/connectDB.h
 - Após isso compile o cliente e o servidor:
   - gcc server/server.c server/user/user.c -o server/server -lm \`mysql_config --cflags --libs\`
   - gcc client/client.c -o client/client 
