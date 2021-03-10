@@ -23,4 +23,4 @@ typedef struct{
 int readUser(char id[]);
 char * getUserID();
 int addFile(char name[], char size[]);
-int printFiles();
+int printFiles(char msg[]);

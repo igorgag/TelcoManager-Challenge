@@ -16,7 +16,7 @@
 
 #include "user/user.h"
 
-void getfile(char buff[], int sockfd, char id[]){
+int getfile(char buff[], int sockfd, char id[]){
 	
 	FILE *fp;
 	char data[SIZE] = {0};
@@ -40,7 +40,7 @@ void getfile(char buff[], int sockfd, char id[]){
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		perror("[-]Error in reading file.");
-		exit(1);
+		return 0;
 	}
 	
 	fseek(fp, 0, SEEK_END);
@@ -53,14 +53,15 @@ void getfile(char buff[], int sockfd, char id[]){
 	
 	    if(send(sockfd, data, sizeof(data),  0) == -1) {
 	      perror("[-]Error in sending file.");
-	      exit(1);
+	      return 0;
 	    }
             bzero(data, SIZE);	    
 	  }
-        fclose(fp);              
+        fclose(fp);   
+        return 1;           
 }
 
-void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){	
+int sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){	
 	
   int n;
   FILE *fp;
@@ -84,7 +85,7 @@ void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){
   fp = fopen(filename, "w");
   if (fp == NULL) {
 	perror("[-]Error in creating file.");
-	exit(1);
+	return 0;
   } 
   
   long int length;
@@ -111,7 +112,8 @@ void sendfile(char buff[], int sockfd, char id[], char *name_file, char *size){
   fseek(fp, 0, SEEK_END);
   snprintf(size, sizeof(size), "%ld", ftell(fp));
   
-  fclose(fp);                    
+  fclose(fp); 
+  return 1;                   
 }
 void func(int sockfd)
 { 
@@ -147,18 +149,20 @@ void func(int sockfd)
  				send(sockfd, buff, sizeof(buff),0);
  				recv(sockfd, buff, sizeof(buff),0);
 				if(strncmp("get", buff, 3) == 0){
-					getfile(buff, sockfd, getUserID());
+					if(!getfile(buff, sockfd, getUserID()))
+						strcpy(buff,"NOK - Arquivo não recebido.\n");					
 					strcpy(buff,"OOK - Arquivo recebido.\n");               
 				} else if(strncmp("send", buff, 4) == 0){
 					char name_file[100];
 					char size[100];
-					sendfile(buff, sockfd, getUserID(), name_file, size);                
+					if(!sendfile(buff, sockfd, getUserID(), name_file, size))
+						strcpy(buff,"OOK - Arquivo não enviado.\n");      
 					addFile(name_file, size);
 					strcpy(buff,"OOK - Arquivo enviado.\n");
 				} else if(strncmp("list", buff, 4) == 0){
-					if(!printFiles(buff)){
-						strcpy(buff,"NOK - Cliente não encontrado.\n");
-					}
+					if(!printFiles(buff))
+						strcpy(buff,"NOK - Comando inválido.\n");
+
 				}else if(strncmp("exit", buff, 4) == 0){
 					break;				
 				} else {

@@ -1,18 +1,18 @@
 #include "user.h"
-#include "../DBconnect.h"
+#include "../connectDB.h"
 
 User *user;
 ListFile *list_files;
+
+MYSQL *con;
 
 MYSQL_RES *result;
 MYSQL_ROW row;
 
 void finish_with_error(MYSQL *con);
 
-int readUser(char id[])
-{
-	MYSQL *con = mysql_init(NULL);
-	char query[200];		
+int connectDB(){
+	con = mysql_init(NULL);			
 	
 	if (con == NULL){
 	      fprintf(stderr, "%s\n", mysql_error(con));
@@ -23,7 +23,16 @@ int readUser(char id[])
 	"TELCOMANAGER", 0, NULL, 0) == NULL){
 		finish_with_error(con);
 		return 0;
-	}	
+	}
+}
+
+int readUser(char id[])
+{
+	char query[200];
+		
+	if(!connectDB())
+		return 0;
+		
 	//Busca dados do usuario(cliente)		
 	sprintf(query, "SELECT * FROM USER user WHERE user.USER_ID = '%s'", id);		
 	
@@ -47,19 +56,89 @@ int readUser(char id[])
 	{	
 		user = malloc(sizeof(User));			
 		strcpy(user->id,row[0]);
-		strcpy(user->name,row[1]);
-
-		//printf("%s %s\n", user->id, user->name);
+		strcpy(user->name,row[1]);		
 
 
 	} else {
 		return 0;
 	}
 	
-	mysql_free_result(result);	
+	mysql_free_result(result);		
+	mysql_close(con);
+  	return 1; 	
+}
+char * getUserID(){
+	return user->id;
+}
+int addFile(char name[], char size[])
+{
+	char query[200];
+	
+	File *file = malloc(sizeof(File)); 
+	strcpy(file->name,name);
+	strcpy(file->size,size);
+	file->next = NULL;
+	
+	if(!connectDB())
+		return 0;
+		
+	//insere arquivo no banco		
+	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES('%s','%s','%s')  ", name, size, user->id);		
+	
+	if (mysql_query(con, query))
+	{
+		finish_with_error(con);
+		return 0;	   
+	}
+		
+	list_files->last->next = file;			
+	list_files->last = file;
+	
+	mysql_close(con);
+	return 1;
+	
+}
+int printFiles(char msg[])
+{	
+	char query[200];
+	
+	if(!connectDB())
+		return 0;
+		
+	strtok(msg,"\n");
+		
+	char ord[10];
+	char asdc[10];
+	
+	char ord_format[50];
+	char asdc_format[10];
+	
+	for(int i=0;i<4;i++){
+		ord[i] = msg[i+5];		
+	}
+	
+	for(int i=0;i<4;i++){
+		asdc[i] = msg[i+10];
+	}
+	
+	if(strncmp(ord, "name",4)){
+		strcpy(ord_format,"file.NAME_FILE");
+	} else if(strncmp(ord, "size",4)){
+		strcpy(ord_format,"file.SIZE");
+	} else {
+		return 0;
+	}
+	
+	if(strncmp(asdc,"asc",3)){
+		strcpy(asdc_format,"ASC");
+	} else if(strncmp(asdc, "desc", 4)){
+		strcpy(asdc_format,"DESC");
+	}else{
+		return 0;
+	}
 	
 	//busca arquivos do cliente
-	sprintf(query, "SELECT file.NAME_FILE,file.SIZE FROM FILE file WHERE file.USER_ID = '%s'", id);		
+	sprintf(query, "SELECT file.NAME_FILE,file.SIZE FROM FILE file WHERE file.USER_ID = '%s' ORDER BY %s %s", user->id, ord_format, asdc_format);		
 	
 	if (mysql_query(con, query))
 	{
@@ -75,7 +154,7 @@ int readUser(char id[])
 		return 0;
 	}
  	
-	num_fields = mysql_num_fields(result);	
+	int num_fields = mysql_num_fields(result);	
 	
 	list_files = malloc(sizeof(ListFile));	
 	list_files->first = NULL;
@@ -99,49 +178,7 @@ int readUser(char id[])
 	} 	
 	
 	mysql_close(con);
-  	return 1; 	
-}
-char * getUserID(){
-	return user->id;
-}
-int addFile(char name[], char size[])
-{
-	File *file = malloc(sizeof(File)); 
-	strcpy(file->name,name);
-	strcpy(file->size,size);
-	file->next = NULL;
 	
-	MYSQL *con = mysql_init(NULL);
-	char query[200];
-	
-	if (con == NULL){
-	      fprintf(stderr, "%s\n", mysql_error(con));
-	      return 0;
-  	}
-  	
-  	if (mysql_real_connect(con, "localhost", USER, PASSWORD,
-	"TELCOMANAGER", 0, NULL, 0) == NULL){
-		finish_with_error(con);
-		return 0;
-	}	
-	//insere arquivo no banco		
-	sprintf(query, "INSERT INTO FILE(NAME_FILE,SIZE,USER_ID) VALUES('%s','%s','%s')  ", name, size, user->id);		
-	
-	if (mysql_query(con, query))
-	{
-		finish_with_error(con);
-		return 0;	   
-	}
-		
-	list_files->last->next = file;			
-	list_files->last = file;
-	
-	mysql_close(con);
-	return 1;
-	
-}
-int printFiles(char msg[])
-{	
 	File *iterator;
 	char row[1000];
 	if(list_files->first == NULL){
