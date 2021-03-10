@@ -17,3 +17,12 @@
 ## Instruções
 - Os Clientes (Cliente1, Cliente2, Cliente3) e seus respectivos arquivos estão previamentes criados para testes.
 - Cliente1, Cliente2 e Cliente3 são os ids que podem ser acessados no servidor pelos clientes.
+
+## Commandos
+
+    - help - lista opções de comando disponíveis 
+    - list <opção de ordenação> <asc/desc> - as opções de ordenação são 'name' e 'size' - Ex: list name asc
+    - send - enviar um arquivo no path 'file' - Ex: send send.txt
+    - get -  recuperar o arquivo com o nome 'file' - Ex: get recv.txt
+    - exit
+
